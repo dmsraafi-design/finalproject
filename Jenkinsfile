@@ -11,7 +11,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t payaman-app:latest payaman/app'
+                sh 'docker build -t payaman-app:latest .'
             }
         }
 
