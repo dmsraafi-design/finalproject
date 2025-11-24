@@ -1,57 +1,42 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'devsecops-app:latest'
-        REGISTRY = 'your-docker-registry' // ganti kalau mau push ke registry
-    }
-
     stages {
-        stage('Checkout SCM') {
+
+        stage('Checkout Code') {
             steps {
-                echo 'Checking out source code...'
-                checkout scm
+                git url: 'https://github.com/dmsraafi-design/finalproject.git', branch: 'main'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t payaman-app:latest payaman/app'
             }
         }
 
-        stage('Security Scan') {
+        stage('Trivy Security Scan') {
             steps {
-                echo 'Running security scan...'
-                sh 'echo "Simulated security scan..."'
+                sh 'trivy image --exit-code 0 payaman-app:latest'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh """
+                    docker login -u $USER -p $PASS
+                    docker tag payaman-app:latest $USER/payaman-app:latest
+                    docker push $USER/payaman-app:latest
+                    """
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Deploying to Kubernetes...'
-                sh 'echo "Simulated deployment..."'
+                sh 'kubectl apply -f k8s/'
             }
-        }
-
-        stage('Simulate Falco & n8n Alert') {
-            steps {
-                echo 'Simulating alerts...'
-                sh 'echo "Simulated Falco & n8n alert triggered."'
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline finished.'
-        }
-        success {
-            echo 'Pipeline succeeded!'
-        }
-        failure {
-            echo 'Pipeline failed! Check logs.'
         }
     }
 }
