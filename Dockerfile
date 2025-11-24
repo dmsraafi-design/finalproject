@@ -1,31 +1,16 @@
-# Gunakan image resmi Python yang ringan
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
-# Set environment
-ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DEFAULT_TIMEOUT=100
+# Install dependencies required for pip packages
+RUN apk update && \
+    apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
-# Update OS dan install dependensi dasar
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Upgrade pip, setuptools, wheel agar lebih aman
-RUN pip install --upgrade pip setuptools wheel
-
-# Copy requirements
 WORKDIR /app
+
+# Install Python requirements
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies dengan flag keamanan
-RUN pip install --upgrade --require-hashes -r requirements.txt || \
-    pip install --upgrade -r requirements.txt
-
-# Copy source code
+# Copy the rest of your application
 COPY . .
 
-# Default command
 CMD ["python", "main.py"]
