@@ -7,20 +7,11 @@ pipeline {
             steps {
                 git url: 'https://github.com/dmsraafi-design/finalproject.git', branch: 'main'
             }
- pipeline {
-    agent any
-
-    stages {
-
-        stage('Checkout Code') {
-            steps {
-                git url: 'https://github.com/dmsraafi-design/finalproject.git', branch: 'main'
-            }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t payaman-app:latest .'
+                sh 'docker build -t payaman-app:latest ./app/app'
             }
         }
 
@@ -34,9 +25,9 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                     sh """
-                    docker login -u $USER -p $PASS
-                    docker tag payaman-app:latest $USER/payaman-app:latest
-                    docker push $USER/payaman-app:latest
+                        docker login -u $USER -p $PASS
+                        docker tag payaman-app:latest $USER/payaman-app:latest
+                        docker push $USER/payaman-app:latest
                     """
                 }
             }
@@ -46,6 +37,15 @@ pipeline {
             steps {
                 sh 'kubectl apply -f k8s/'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
