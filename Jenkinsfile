@@ -7,15 +7,6 @@ pipeline {
             steps {
                 git url: 'https://github.com/dmsraafi-design/finalproject.git', branch: 'main'
             }
- pipeline {
-    agent any
-
-    stages {
-
-        stage('Checkout Code') {
-            steps {
-                git url: 'https://github.com/dmsraafi-design/finalproject.git', branch: 'main'
-            }
         }
 
         stage('Build Docker Image') {
@@ -49,4 +40,3 @@ pipeline {
         }
     }
 }
-
